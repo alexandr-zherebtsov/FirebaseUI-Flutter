@@ -3,9 +3,9 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:firebase_auth/firebase_auth.dart' as fba;
+import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:firebase_ui_shared/firebase_ui_shared.dart';
 import 'package:flutter/widgets.dart';
-import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 
 import '../widgets/internal/universal_page_route.dart';
 import 'internal/responsive_page.dart';
@@ -70,6 +70,12 @@ class PhoneInputScreen extends StatelessWidget {
   /// {@macro ui.auth.screens.responsive_page.max_width}
   final double? maxWidth;
 
+  final PhoneNumberBuilder? builder;
+
+  final AuthSnackBarBuilder? snackBarBuilder;
+
+  final bool useSnackBarExceptions;
+
   const PhoneInputScreen({
     super.key,
     this.action,
@@ -85,6 +91,9 @@ class PhoneInputScreen extends StatelessWidget {
     this.multiFactorSession,
     this.mfaHint,
     this.maxWidth,
+    this.builder,
+    this.snackBarBuilder,
+    this.useSnackBarExceptions = false,
   });
 
   void _next(BuildContext context, AuthAction? action, Object flowKey, _) {
@@ -108,33 +117,48 @@ class PhoneInputScreen extends StatelessWidget {
 
     return FirebaseUIActions(
       actions: actions ?? [SMSCodeRequestedAction(_next)],
-      child: UniversalScaffold(
-        body: ResponsivePage(
-          desktopLayoutDirection: desktopLayoutDirection,
-          sideBuilder: sideBuilder,
-          headerBuilder: headerBuilder,
-          headerMaxExtent: headerMaxExtent,
-          breakpoint: breakpoint,
-          maxWidth: maxWidth,
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                PhoneInputView(
-                  auth: auth,
-                  action: action,
-                  subtitleBuilder: subtitleBuilder,
-                  footerBuilder: footerBuilder,
-                  flowKey: flowKey,
-                  multiFactorSession: multiFactorSession,
-                  mfaHint: mfaHint,
+      child: builder != null
+          ? PhoneInputView(
+              auth: auth,
+              action: action,
+              subtitleBuilder: subtitleBuilder,
+              footerBuilder: footerBuilder,
+              flowKey: flowKey,
+              multiFactorSession: multiFactorSession,
+              mfaHint: mfaHint,
+              builder: builder,
+              snackBarBuilder: snackBarBuilder,
+              useSnackBarExceptions: useSnackBarExceptions,
+            )
+          : UniversalScaffold(
+              body: ResponsivePage(
+                desktopLayoutDirection: desktopLayoutDirection,
+                sideBuilder: sideBuilder,
+                headerBuilder: headerBuilder,
+                headerMaxExtent: headerMaxExtent,
+                breakpoint: breakpoint,
+                maxWidth: maxWidth,
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      PhoneInputView(
+                        auth: auth,
+                        action: action,
+                        subtitleBuilder: subtitleBuilder,
+                        footerBuilder: footerBuilder,
+                        flowKey: flowKey,
+                        multiFactorSession: multiFactorSession,
+                        mfaHint: mfaHint,
+                        snackBarBuilder: snackBarBuilder,
+                        useSnackBarExceptions: useSnackBarExceptions,
+                      ),
+                    ],
+                  ),
                 ),
-              ],
+              ),
             ),
-          ),
-        ),
-      ),
     );
   }
 }

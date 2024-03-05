@@ -4,11 +4,10 @@
 
 // ignore_file: unnecessary_this
 
-import 'package:flutter/foundation.dart';
-import 'package:flutter/widgets.dart';
-
 import 'package:firebase_auth/firebase_auth.dart' as fba;
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 
 /// An exception that is being thrown when user cancels the authentication
 /// process.
@@ -180,5 +179,10 @@ class AuthFlow<T extends AuthProvider> extends ValueNotifier<AuthState>
   @override
   void onMFARequired(fba.MultiFactorResolver resolver) {
     value = MFARequired(resolver);
+  }
+
+  @override
+  void onCanceledAction() {
+    onCanceled();
   }
 }

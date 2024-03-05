@@ -2,10 +2,10 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:firebase_auth/firebase_auth.dart' as fba;
+import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:firebase_ui_shared/firebase_ui_shared.dart';
 import 'package:flutter/widgets.dart';
-import 'package:firebase_ui_auth/firebase_ui_auth.dart';
-import 'package:firebase_auth/firebase_auth.dart' as fba;
 
 import 'responsive_page.dart';
 
@@ -57,6 +57,16 @@ class LoginScreen extends StatelessWidget {
   /// {@macro ui.auth.screens.responsive_page.max_width}
   final double? maxWidth;
 
+  final EmailAuthProvider? emailPasswordProvider;
+
+  final EmailPasswordBuilder? emailPasswordBuilder;
+
+  final Widget? phoneBuilder;
+
+  final AuthSnackBarBuilder? snackBarBuilder;
+
+  final bool useSnackBarExceptions;
+
   const LoginScreen({
     super.key,
     required this.action,
@@ -77,12 +87,17 @@ class LoginScreen extends StatelessWidget {
     this.styles,
     this.showPasswordVisibilityToggle = false,
     this.maxWidth,
+    this.emailPasswordProvider,
+    this.emailPasswordBuilder,
+    this.phoneBuilder,
+    this.snackBarBuilder,
+    this.useSnackBarExceptions = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final loginContent = ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 500),
+      constraints: const BoxConstraints(minWidth: 500),
       child: Padding(
         padding: const EdgeInsets.all(30),
         child: LoginView(
@@ -96,6 +111,10 @@ class LoginScreen extends StatelessWidget {
           subtitleBuilder: subtitleBuilder,
           footerBuilder: footerBuilder,
           showPasswordVisibilityToggle: showPasswordVisibilityToggle,
+          emailPasswordProvider: emailPasswordProvider,
+          builder: emailPasswordBuilder,
+          snackBarBuilder: snackBarBuilder,
+          useSnackBarExceptions: useSnackBarExceptions,
         ),
       ),
     );
@@ -112,10 +131,29 @@ class LoginScreen extends StatelessWidget {
 
     return FirebaseUITheme(
       styles: styles ?? const {},
-      child: UniversalScaffold(
-        body: body,
-        resizeToAvoidBottomInset: resizeToAvoidBottomInset,
-      ),
+      child: phoneBuilder != null
+          ? phoneBuilder!
+          : emailPasswordBuilder != null
+              ? LoginView(
+                  key: loginViewKey,
+                  action: action,
+                  auth: auth,
+                  providers: providers,
+                  oauthButtonVariant: oauthButtonVariant,
+                  email: email,
+                  showAuthActionSwitch: showAuthActionSwitch,
+                  subtitleBuilder: subtitleBuilder,
+                  footerBuilder: footerBuilder,
+                  showPasswordVisibilityToggle: showPasswordVisibilityToggle,
+                  emailPasswordProvider: emailPasswordProvider,
+                  builder: emailPasswordBuilder,
+                  snackBarBuilder: snackBarBuilder,
+                  useSnackBarExceptions: useSnackBarExceptions,
+                )
+              : UniversalScaffold(
+                  body: body,
+                  resizeToAvoidBottomInset: resizeToAvoidBottomInset,
+                ),
     );
   }
 }

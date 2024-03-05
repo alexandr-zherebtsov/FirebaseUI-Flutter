@@ -2,12 +2,15 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:flutter/cupertino.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fba;
+import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:firebase_ui_localizations/firebase_ui_localizations.dart';
+import 'package:firebase_ui_shared/firebase_ui_shared.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../validators.dart';
 
+import '../validators.dart';
 import '../widgets/internal/universal_text_form_field.dart';
 
 part '../configs/countries.dart';
@@ -91,6 +94,20 @@ class PhoneInput extends StatefulWidget {
   /// picker.
   final String? initialCountryCode;
 
+  final fba.FirebaseAuth? auth;
+
+  final AuthAction? action;
+
+  final AuthState? state;
+
+  final TextEditingController? phoneCtrl;
+
+  final Exception? exception;
+
+  final Object? flowKey;
+
+  final PhoneNumberBuilder? builder;
+
   /// Returns a phone number from the [PhoneInput] that was provided a [key].
   static String? getPhoneNumber(GlobalKey<PhoneInputState> key) {
     final state = key.currentState!;
@@ -107,6 +124,13 @@ class PhoneInput extends StatefulWidget {
     super.key,
     this.initialCountryCode,
     this.onSubmit,
+    this.auth,
+    this.action,
+    this.state,
+    this.phoneCtrl,
+    this.exception,
+    this.flowKey,
+    this.builder,
   });
 
   @override
@@ -236,8 +260,26 @@ class PhoneInputState extends State<PhoneInput> {
   @override
   Widget build(BuildContext context) {
     final l = FirebaseUILocalizations.labelsOf(context);
-    final isCupertino = CupertinoUserInterfaceLevel.maybeOf(context) != null;
+    final isCupertino = PlatformActionUI.isApple();
 
+    if (widget.builder != null &&
+        widget.state != null &&
+        widget.phoneCtrl != null) {
+      return widget.builder!(
+        context,
+        widget.flowKey,
+        widget.auth,
+        widget.state!,
+        widget.action,
+        widget.phoneCtrl!,
+        widget.state is AuthFailed ? widget.exception! : null,
+        (String? phone) {
+          widget.onSubmit!(phone.isNullOrEmpty()
+              ? (widget.phoneCtrl?.text.clearPhoneNumber() ?? '')
+              : phone.clearPhoneNumber());
+        },
+      );
+    }
     return Form(
       key: formKey,
       child: Column(

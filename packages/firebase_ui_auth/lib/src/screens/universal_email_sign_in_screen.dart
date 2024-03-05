@@ -2,11 +2,11 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:firebase_ui_auth/firebase_ui_auth.dart';
+import 'package:firebase_ui_auth/src/screens/internal/multi_provider_screen.dart';
+import 'package:firebase_ui_auth/src/widgets/internal/universal_page_route.dart';
 import 'package:firebase_ui_shared/firebase_ui_shared.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_ui_auth/firebase_ui_auth.dart';
-import '../widgets/internal/universal_page_route.dart';
-import 'internal/multi_provider_screen.dart';
 
 /// A screen that allows to resolve previously used providers for a given email.
 @Deprecated(
@@ -16,6 +16,8 @@ import 'internal/multi_provider_screen.dart';
 class UniversalEmailSignInScreen extends MultiProviderScreen {
   /// A callback that is being called when providers fetch request completed.
   final ProvidersFoundCallback? onProvidersFound;
+  final AuthSnackBarBuilder? snackBarBuilder;
+  final bool useSnackBarExceptions;
 
   const UniversalEmailSignInScreen({
     super.key,
@@ -26,6 +28,8 @@ class UniversalEmailSignInScreen extends MultiProviderScreen {
     /// A list of all supported auth providers
     super.providers,
     this.onProvidersFound,
+    this.snackBarBuilder,
+    this.useSnackBarExceptions = false,
   }) : assert(onProvidersFound != null || providers != null);
 
   Widget _wrap(BuildContext context, Widget child) {
@@ -88,6 +92,8 @@ class UniversalEmailSignInScreen extends MultiProviderScreen {
             providers: authorizedProviders,
             auth: auth,
             email: email,
+            snackBarBuilder: snackBarBuilder,
+            useSnackBarExceptions: useSnackBarExceptions,
           ),
         ),
       );

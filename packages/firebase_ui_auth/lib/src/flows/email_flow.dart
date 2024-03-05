@@ -66,4 +66,9 @@ class EmailAuthFlow extends AuthFlow<EmailAuthProvider>
   void setEmailAndPassword(String email, String password) {
     provider.authenticate(email, password, action);
   }
+
+  @override
+  void onCanceledAction() {
+    onCanceled();
+  }
 }

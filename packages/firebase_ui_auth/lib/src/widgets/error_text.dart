@@ -4,6 +4,7 @@
 
 import 'package:firebase_auth/firebase_auth.dart' as fba;
 import 'package:firebase_ui_localizations/firebase_ui_localizations.dart';
+import 'package:firebase_ui_shared/firebase_ui_shared.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show PlatformException;
@@ -27,9 +28,16 @@ String? localizedErrorText(
       return labels.credentialAlreadyInUseErrorText;
     case 'invalid-verification-code':
       return labels.invalidVerificationCodeErrorText;
+    case 'invalid-email':
+      return labels.invalidEmail;
+    case 'invalid-phone-number':
+      return labels.invalidPhoneNumber;
+    case 'missing-email':
+      return labels.missingEmail;
+    case 'invalid-credential':
+      return labels.invalidCredential;
     case 'weak-password':
       return labels.weakPasswordErrorText;
-
     default:
       return null;
   }
@@ -93,7 +101,7 @@ class ErrorText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     late Color color;
-    final isCupertino = CupertinoUserInterfaceLevel.maybeOf(context) != null;
+    final isCupertino = PlatformActionUI.isApple();
 
     if (isCupertino) {
       color = CupertinoColors.destructiveRed;

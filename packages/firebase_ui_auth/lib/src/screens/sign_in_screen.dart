@@ -101,11 +101,24 @@ class SignInScreen extends MultiProviderScreen {
   /// {@macro ui.auth.screens.responsive_page.max_width}
   final double? maxWidth;
 
+  final AuthAction? startAction;
+
+  final EmailAuthProvider? emailPasswordProvider;
+
+  final EmailPasswordBuilder? emailPasswordBuilder;
+
+  final Widget? phoneBuilder;
+
+  final AuthSnackBarBuilder? snackBarBuilder;
+
+  final bool useSnackBarExceptions;
+
   /// {@macro ui.auth.screens.sign_in_screen}
   const SignInScreen({
     super.key,
     super.providers,
     super.auth,
+    this.startAction,
     this.headerMaxExtent,
     this.headerBuilder,
     this.sideBuilder,
@@ -122,6 +135,11 @@ class SignInScreen extends MultiProviderScreen {
     this.styles,
     this.showPasswordVisibilityToggle = false,
     this.maxWidth,
+    this.emailPasswordProvider,
+    this.emailPasswordBuilder,
+    this.phoneBuilder,
+    this.snackBarBuilder,
+    this.useSnackBarExceptions = false,
   });
 
   Future<void> _signInWithDifferentProvider(
@@ -162,7 +180,7 @@ class SignInScreen extends MultiProviderScreen {
       child: LoginScreen(
         styles: styles,
         loginViewKey: loginViewKey,
-        action: AuthAction.signIn,
+        action: startAction ?? AuthAction.signIn,
         providers: providers,
         auth: auth,
         headerMaxExtent: headerMaxExtent,
@@ -178,6 +196,11 @@ class SignInScreen extends MultiProviderScreen {
         breakpoint: breakpoint,
         showPasswordVisibilityToggle: showPasswordVisibilityToggle,
         maxWidth: maxWidth,
+        emailPasswordProvider: emailPasswordProvider,
+        emailPasswordBuilder: emailPasswordBuilder,
+        phoneBuilder: phoneBuilder,
+        snackBarBuilder: snackBarBuilder,
+        useSnackBarExceptions: useSnackBarExceptions,
       ),
     );
   }

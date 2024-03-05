@@ -3,8 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:firebase_auth/firebase_auth.dart' as fba;
-import 'package:flutter/widgets.dart';
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
+import 'package:flutter/widgets.dart';
 
 /// An [AuthState] that indicates that [PhoneAuthFlow] is not yet initialized
 /// wuth the phone number. UI should provide a way to submit a phone number.
@@ -165,6 +165,11 @@ class PhoneAuthFlow extends AuthFlow<PhoneAuthProvider>
   @override
   void onConfirmationRequested(fba.ConfirmationResult result) {
     value = SMSCodeSent(confirmationResult: result);
+  }
+
+  @override
+  void onCanceledAction() {
+    onCanceled();
   }
 }
 

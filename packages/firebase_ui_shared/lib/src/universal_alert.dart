@@ -2,11 +2,11 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:firebase_ui_shared/firebase_ui_shared.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_ui_shared/firebase_ui_shared.dart';
 
-class UniversalAlert extends PlatformWidget {
+class UniversalAlert extends StatelessWidget {
   final void Function() onConfirm;
   final void Function() onCancel;
 
@@ -32,24 +32,16 @@ class UniversalAlert extends PlatformWidget {
     required Widget child,
     bool isDestructiveAction = false,
   }) {
-    final ThemeData theme = Theme.of(context);
-    switch (theme.platform) {
-      case TargetPlatform.android:
-      case TargetPlatform.fuchsia:
-      case TargetPlatform.linux:
-      case TargetPlatform.windows:
-        return TextButton(onPressed: onPressed, child: child);
-      case TargetPlatform.iOS:
-      case TargetPlatform.macOS:
-        return CupertinoDialogAction(
-          onPressed: onPressed,
-          isDestructiveAction: isDestructiveAction,
-          child: child,
-        );
+    if (PlatformActionUI.isApplePlatform()) {
+      return CupertinoDialogAction(
+        onPressed: onPressed,
+        isDestructiveAction: isDestructiveAction,
+        child: child,
+      );
     }
+    return TextButton(onPressed: onPressed, child: child);
   }
 
-  @override
   Widget buildMaterial(BuildContext context) {
     return AlertDialog(
       title: Text(title),
@@ -70,7 +62,6 @@ class UniversalAlert extends PlatformWidget {
     );
   }
 
-  @override
   Widget buildCupertino(BuildContext context) {
     return CupertinoAlertDialog(
       title: Text(title),
@@ -89,5 +80,13 @@ class UniversalAlert extends PlatformWidget {
         ),
       ],
     );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (PlatformActionUI.isApplePlatform()) {
+      return buildCupertino(context);
+    }
+    return buildMaterial(context);
   }
 }

@@ -1,7 +1,8 @@
 name: firebase_ui_storage
 description: Pre-built widgets and utilites that make it easy to integrate Firebase Storage into your Flutter app.
+publish_to: 'none'
 version: 2.0.3
-homepage: https://github.com/firebase/FirebaseUI-Flutter/tree/master/packages/firebase_ui_storage/
+#homepage: https://github.com/firebase/FirebaseUI-Flutter/tree/master/packages/firebase_ui_storage/
 
 environment:
   sdk: ">=3.0.0 <4.0.0"
@@ -13,13 +14,29 @@ false_secrets:
 dependencies:
   flutter:
     sdk: flutter
-  firebase_storage: ^11.6.6
-  firebase_ui_localizations: ^1.10.2
-  firebase_ui_shared: ^1.4.1
   path: ^1.8.3
   uuid: ^4.2.2
   file_selector: ^1.0.1
   flutter_blurhash: ^0.8.2
+  firebase_storage: ^11.6.6
+#  firebase_ui_localizations: ^1.10.2
+#  firebase_ui_shared: ^1.4.1
+
+#  firebase_ui_localizations:
+#    path: ../firebase_ui_localizations
+#  firebase_ui_shared:
+#    path: ../firebase_ui_shared
+
+  firebase_ui_localizations:
+    git:
+      url: https://github.com/alexandr-zherebtsov/FirebaseUI-Flutter.git
+      path: packages/firebase_ui_localizations/
+      ref: feature/UI-builders
+  firebase_ui_shared:
+    git:
+      url: https://github.com/alexandr-zherebtsov/FirebaseUI-Flutter.git
+      path: packages/firebase_ui_shared/
+      ref: feature/UI-builders
 
 dev_dependencies:
   flutter_test:

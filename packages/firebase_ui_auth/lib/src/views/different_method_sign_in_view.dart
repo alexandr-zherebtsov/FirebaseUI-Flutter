@@ -3,8 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:firebase_auth/firebase_auth.dart' as fba;
-import 'package:flutter/widgets.dart';
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
+import 'package:flutter/widgets.dart';
 
 /// {@template ui.auth.views.different_method_sign_in_view}
 /// A view that renders a list of providers that were previously used by the
@@ -31,6 +31,10 @@ class DifferentMethodSignInView extends StatelessWidget {
   /// {@macro ui.auth.widgets.email_from.showPasswordVisibilityToggle}
   final bool showPasswordVisibilityToggle;
 
+  final AuthSnackBarBuilder? snackBarBuilder;
+
+  final bool useSnackBarExceptions;
+
   /// {@macro ui.auth.views.different_method_sign_in_view}
   const DifferentMethodSignInView({
     super.key,
@@ -38,7 +42,9 @@ class DifferentMethodSignInView extends StatelessWidget {
     required this.providers,
     this.auth,
     this.onSignedIn,
+    this.snackBarBuilder,
     this.showPasswordVisibilityToggle = false,
+    this.useSnackBarExceptions = false,
   });
 
   @override
@@ -68,6 +74,8 @@ class DifferentMethodSignInView extends StatelessWidget {
         providers: providers,
         showTitle: false,
         showPasswordVisibilityToggle: showPasswordVisibilityToggle,
+        snackBarBuilder: snackBarBuilder,
+        useSnackBarExceptions: useSnackBarExceptions,
       ),
       listener: (oldState, newState, ctrl) {
         if (newState is SignedIn) {

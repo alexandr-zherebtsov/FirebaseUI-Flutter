@@ -4,6 +4,7 @@
 
 import 'package:firebase_auth/firebase_auth.dart' as fba;
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
+import 'package:firebase_ui_auth/src/exeptions.dart';
 import 'package:firebase_ui_localizations/firebase_ui_localizations.dart';
 import 'package:firebase_ui_oauth/firebase_ui_oauth.dart'
     hide OAuthProviderButtonBase;
@@ -22,11 +23,15 @@ class _AvailableProvidersRow extends StatefulWidget {
   final fba.FirebaseAuth? auth;
   final List<AuthProvider> providers;
   final VoidCallback onProviderLinked;
+  final AuthSnackBarBuilder? snackBarBuilder;
+  final bool useSnackBarExceptions;
 
   const _AvailableProvidersRow({
     this.auth,
     required this.providers,
     required this.onProviderLinked,
+    this.snackBarBuilder,
+    this.useSnackBarExceptions = false,
   });
 
   @override
@@ -73,7 +78,7 @@ class _AvailableProvidersRowState extends State<_AvailableProvidersRow> {
   @override
   Widget build(BuildContext context) {
     final l = FirebaseUILocalizations.labelsOf(context);
-    final isCupertino = CupertinoUserInterfaceLevel.maybeOf(context) != null;
+    final isCupertino = PlatformActionUI.isApple();
 
     final providers = widget.providers
         .where((provider) => provider is! EmailLinkAuthProvider)
@@ -118,6 +123,8 @@ class _AvailableProvidersRowState extends State<_AvailableProvidersRow> {
                 auth: widget.auth,
                 action: AuthAction.link,
                 variant: OAuthButtonVariant.icon,
+                snackBarBuilder: widget.snackBarBuilder,
+                useSnackBarExceptions: widget.useSnackBarExceptions,
               ),
             ),
       ],
@@ -250,7 +257,7 @@ class _LinkedProvidersRowState extends State<_LinkedProvidersRow> {
   }
 
   Widget buildProviderIcon(BuildContext context, String providerId) {
-    final isCupertino = CupertinoUserInterfaceLevel.maybeOf(context) != null;
+    final isCupertino = PlatformActionUI.isApple();
     const animationDuration = Duration(milliseconds: 150);
     const curve = Curves.easeOut;
 
@@ -340,23 +347,40 @@ class _LinkedProvidersRowState extends State<_LinkedProvidersRow> {
   }
 }
 
-class _EmailVerificationBadge extends StatefulWidget {
+class ProfileEmailVerificationBadge extends StatefulWidget {
   final fba.FirebaseAuth auth;
   final fba.ActionCodeSettings? actionCodeSettings;
-  const _EmailVerificationBadge({
+  final AuthSnackBarBuilder? snackBarBuilder;
+  final bool useSnackBarExceptions;
+  final ProfileEmailVerificationBuilder? builder;
+
+  const ProfileEmailVerificationBadge({
+    super.key,
     required this.auth,
     this.actionCodeSettings,
+    this.snackBarBuilder,
+    this.useSnackBarExceptions = false,
+    this.builder,
   });
 
   @override
-  State<_EmailVerificationBadge> createState() =>
-      _EmailVerificationBadgeState();
+  State<ProfileEmailVerificationBadge> createState() =>
+      _ProfileEmailVerificationBadgeState();
 }
 
-class _EmailVerificationBadgeState extends State<_EmailVerificationBadge> {
+class _ProfileEmailVerificationBadgeState
+    extends State<ProfileEmailVerificationBadge> {
   late final service = EmailVerificationController(widget.auth)
     ..addListener(() {
       setState(() {});
+      if (widget.useSnackBarExceptions &&
+          state == EmailVerificationState.failed) {
+        ExceptionManager.showSnackBar(
+          context: context,
+          exception: Exception(),
+          snackBarBuilder: widget.snackBarBuilder,
+        );
+      }
     })
     ..reload();
 
@@ -371,6 +395,12 @@ class _EmailVerificationBadgeState extends State<_EmailVerificationBadge> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    service.value = EmailVerificationState.unresolved;
+  }
+
+  @override
   Widget build(BuildContext context) {
     if (state == EmailVerificationState.dismissed ||
         state == EmailVerificationState.unresolved ||
@@ -379,6 +409,25 @@ class _EmailVerificationBadgeState extends State<_EmailVerificationBadge> {
     }
 
     final l = FirebaseUILocalizations.labelsOf(context);
+
+    if (widget.builder != null) {
+      return widget.builder!(
+        context,
+        state,
+        state == EmailVerificationState.sending,
+        state == EmailVerificationState.sent ||
+            state == EmailVerificationState.pending,
+        state == EmailVerificationState.sent ||
+                state == EmailVerificationState.pending
+            ? l.verificationEmailSentTextShort
+            : l.emailIsNotVerifiedText,
+        () => service.sendVerificationEmail(
+          platform,
+          widget.actionCodeSettings,
+        ),
+        () => setState(service.dismiss),
+      );
+    }
 
     return Padding(
       padding: const EdgeInsets.only(top: 16),
@@ -741,6 +790,12 @@ class ProfileScreen extends MultiProviderScreen {
   /// {@macro ui.auth.widgets.delete_account_button.show_delete_confirmation_dialog}
   final bool showDeleteConfirmationDialog;
 
+  final ProfileBuilder? builder;
+
+  final AuthSnackBarBuilder? snackBarBuilder;
+
+  final bool useSnackBarExceptions;
+
   const ProfileScreen({
     super.key,
     super.auth,
@@ -757,6 +812,9 @@ class ProfileScreen extends MultiProviderScreen {
     this.showMFATile = false,
     this.showUnlinkConfirmationDialog = false,
     this.showDeleteConfirmationDialog = false,
+    this.builder,
+    this.snackBarBuilder,
+    this.useSnackBarExceptions = false,
   });
 
   Future<bool> _reauthenticate(BuildContext context) {
@@ -801,7 +859,7 @@ class ProfileScreen extends MultiProviderScreen {
   }
 
   Widget buildPage(BuildContext context) {
-    final isCupertino = CupertinoUserInterfaceLevel.maybeOf(context) != null;
+    final isCupertino = PlatformActionUI.isApple();
     final providersScopeKey = RebuildScopeKey();
     final mfaScopeKey = RebuildScopeKey();
     final emailVerificationScopeKey = RebuildScopeKey();
@@ -830,9 +888,11 @@ class ProfileScreen extends MultiProviderScreen {
                 return const SizedBox.shrink();
               }
 
-              return _EmailVerificationBadge(
+              return ProfileEmailVerificationBadge(
                 auth: auth,
                 actionCodeSettings: actionCodeSettings,
+                snackBarBuilder: snackBarBuilder,
+                useSnackBarExceptions: useSnackBarExceptions,
               );
             },
             scopeKey: emailVerificationScopeKey,
@@ -874,6 +934,8 @@ class ProfileScreen extends MultiProviderScreen {
                 auth: auth,
                 providers: availableProviders,
                 onProviderLinked: providersScopeKey.rebuild,
+                snackBarBuilder: snackBarBuilder,
+                useSnackBarExceptions: useSnackBarExceptions,
               ),
             );
           },
@@ -962,7 +1024,14 @@ class ProfileScreen extends MultiProviderScreen {
 
     return FirebaseUIActions(
       actions: actions ?? const [],
-      child: child,
+      child: builder != null
+          ? builder!(
+              context,
+              auth,
+              () => _reauthenticate(context),
+              actionCodeSettings,
+            )
+          : child,
     );
   }
 }

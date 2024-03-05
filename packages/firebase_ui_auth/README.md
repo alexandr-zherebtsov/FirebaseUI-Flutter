@@ -1,4 +1,193 @@
-# Firebase UI Auth
+# Flutter Firebase Authorization UI
+
+Our project aims to enhance the `firebase_ui_auth` package. This package offers various types of authentication, but it lacks widget customization options, which may be limiting for developers. We aim to expand the capabilities of this package by introducing tools for widget customization, enabling developers to create more personalized and aesthetically fitting authentication solutions. Our work is focused on making the authentication process more flexible and enjoyable for end-users, improving usability, and ensuring a high level of customization.
+
+To achieve this, we want to utilize custom WidgetBuilders that will contain the necessary functionality for developers to create any view they desire. These custom WidgetBuilders will empower developers to customize the authentication interface according to their specific requirements, offering flexibility and versatility in designing authentication screens.
+
+The library contains such builders: `AuthScreenBuilder`, `PhoneScreenBuilder`, `SMSCodeScreenBuilder`, `ProfileScreenBuilder`.
+
+# Installing
+
+```yaml
+  firebase_core: ^2.25.4
+  firebase_auth: ^4.17.5
+  firebase_ui_auth:
+    git:
+      url: https://github.com/alexandr-zherebtsov/FirebaseUI-Flutter.git
+      path: packages/firebase_ui_auth/
+      ref: feature/UI-builders
+  firebase_ui_oauth_apple:
+    git:
+      url: https://github.com/alexandr-zherebtsov/FirebaseUI-Flutter.git
+      path: packages/firebase_ui_oauth_apple/
+      ref: feature/UI-builders
+  firebase_ui_oauth_google:
+    git:
+      url: https://github.com/alexandr-zherebtsov/FirebaseUI-Flutter.git
+      path: packages/firebase_ui_oauth_google/
+      ref: feature/UI-builders
+  firebase_ui_oauth_facebook:
+    git:
+      url: https://github.com/alexandr-zherebtsov/FirebaseUI-Flutter.git
+      path: packages/firebase_ui_oauth_facebook/
+      ref: feature/UI-builders
+  firebase_ui_oauth_twitter:
+    git:
+      url: https://github.com/alexandr-zherebtsov/FirebaseUI-Flutter.git
+      path: packages/firebase_ui_oauth_twitter/
+      ref: feature/UI-builders
+```
+
+EmailPasswordBuilder example:
+```dart
+typedef AuthScreenBuilder = Widget Function(
+  BuildContext context,
+  AuthAction? authAction,
+  VoidCallback? handleDifferentAuthAction,
+  TextEditingController emailCtrl,
+  TextEditingController passwordCtrl,
+  TextEditingController confirmPasswordCtrl,
+  bool isLoading,
+  Exception? exception,
+  VoidCallback? onSubmit,
+);
+```
+
+Auth UI example:
+```dart
+AuthScreenBuilder(
+  auth: FirebaseAuth.instance,
+  providers: FirebaseInitialization.providers,
+  builder: (
+    BuildContext context,
+    AuthAction? authAction,
+    VoidCallback? handleDifferentAuthAction,
+    TextEditingController emailCtrl,
+    TextEditingController passwordCtrl,
+    TextEditingController confirmPasswordCtrl,
+    bool isLoading,
+    Exception? exception,
+    VoidCallback? onSubmit,
+  ) {
+    // Our UI
+  },
+  actions: [
+    AuthStateChangeAction<SignedIn>((context, state) {
+      context.router.replaceAll([const UserRoute()]);
+    }),
+    AuthStateChangeAction<UserCreated>((context, state) {
+      context.router.replaceAll([const UserRoute()]);
+    }),
+  ],
+)
+```
+
+OAuthProviderButton example:
+```dart
+OAuthProviderButton(
+  provider: FirebaseInitialization.appleProvider,
+  useSnackBarExceptions: true,
+  snackBarBuilder: AppSnackBar.snackBarBuilder,
+  builder: (
+    BuildContext context,
+    bool? isLoading,
+    Exception? exception,
+    VoidCallback? onSubmit,
+  ) {
+    // Our UI
+  },
+)
+```
+
+ProfileBuilder example:
+```dart
+typedef ProfileBuilder = Widget Function(
+  BuildContext context,
+  FirebaseAuth auth,
+  Future<bool> Function() onSignInRequired,
+  ActionCodeSettings? actionCodeSettings,
+);
+```
+
+Profile UI example:
+```dart
+ProfileScreenBuilder(
+  auth: FirebaseAuth.instance,
+  providers: FirebaseInitialization.providers,
+  builder: (
+    BuildContext context,
+    FirebaseAuth auth,
+    Future<bool> Function() onSignInRequired,
+    ActionCodeSettings? actionCodeSettings,
+  ) {
+    // Our UI
+  },
+  actions: [
+    SignedOutAction((context) {
+      context.router.replaceAll([const AuthRoute()]);
+    }),
+  ],
+)
+```
+
+You need to use special widgets for email verification, login and to delete the account: `ProfileEmailVerificationBuilder`, `SignOutButton`, `DeleteAccountButton`.
+```dart
+ProfileEmailVerificationBadgeBuilder(
+  auth: auth,
+  actionCodeSettings: actionCodeSettings,
+  useSnackBarExceptions: true,
+  snackBarBuilder: AppSnackBar.snackBarBuilder,
+  builder: (
+    BuildContext context,
+    EmailVerificationState state,
+    bool isLoading,
+    bool isAwaiting,
+    String title,
+    VoidCallback send,
+    VoidCallback dismiss,
+  ) {
+    // Our UI
+  },
+)
+```
+```dart
+SignOutButton(
+  builder: (
+    BuildContext context,
+    VoidCallback signOut,
+  ) {
+    return IconButton(
+      onPressed: signOut,
+      icon: const Icon(Icons.logout),
+    );
+  },
+)
+```
+```dart
+DeleteAccountButton(
+  auth: auth,
+  onSignInRequired: onSignInRequired,
+  showDeleteConfirmationDialog: true,
+  builder: (
+    BuildContext context,
+    bool isLoading,
+    VoidCallback delete,
+  ) {
+    return MainButton(
+      title: 'Delete Account',
+      loading: isLoading,
+      onPressed: delete,
+      color: Colors.red,
+    );
+  },
+)
+```
+
+So, enhancing the `firebase_ui_auth` library is a extensible solution that can be integrated into any project with any UI, which is not currently possible with this library.
+
+
+
+# Firebase UI Auth (Official Documentation)
 
 [![pub package](https://img.shields.io/pub/v/firebase_ui_auth.svg)](https://pub.dev/packages/firebase_ui_auth)
 

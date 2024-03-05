@@ -63,6 +63,12 @@ class DeleteAccountButton extends StatefulWidget {
   /// {@endtemplate}
   final bool showDeleteConfirmationDialog;
 
+  final Future<bool> Function()? preDeleteAction;
+
+  final bool signInRequired;
+
+  final DeleteAccountBuilder? builder;
+
   /// {@macro ui.auth.widgets.delete_account_button}
   const DeleteAccountButton({
     super.key,
@@ -71,6 +77,9 @@ class DeleteAccountButton extends StatefulWidget {
     this.onDeleteFailed,
     this.variant = ButtonVariant.filled,
     this.showDeleteConfirmationDialog = false,
+    this.preDeleteAction,
+    this.signInRequired = false,
+    this.builder,
   });
 
   @override
@@ -107,14 +116,22 @@ class _DeleteAccountButtonState extends State<DeleteAccountButton> {
 
     if (!(confirmed ?? false)) return;
 
+    if (widget.signInRequired) {
+      final signedIn = await widget.onSignInRequired!();
+      if (!signedIn) return;
+    }
+
     setState(() {
       _isLoading = true;
     });
 
     try {
       final user = auth.currentUser!;
+      final bool? res = await widget.preDeleteAction?.call();
+      if (widget.preDeleteAction != null && !(res ?? true)) {
+        return;
+      }
       await auth.currentUser?.delete();
-
       FirebaseUIAction.ofType<AccountDeletedAction>(context)?.callback(
         context,
         user,
@@ -144,6 +161,14 @@ class _DeleteAccountButtonState extends State<DeleteAccountButton> {
 
     final themeData = Theme.of(context);
     final colorScheme = themeData.colorScheme;
+
+    if (widget.builder != null) {
+      return widget.builder!(
+        context,
+        _isLoading,
+        _deleteAccount,
+      );
+    }
 
     return LoadingButton(
       isLoading: _isLoading,

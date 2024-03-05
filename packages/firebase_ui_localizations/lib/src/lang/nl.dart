@@ -336,4 +336,23 @@ class NlLocalizations extends FirebaseUILocalizationLabels {
 
   @override
   String get confirmDeleteAccountButtonLabel => "Yes, delete";
+
+  @override
+  String get signOut => "Sign out?";
+
+  @override
+  String get signOutDescription => "Are you sure you want to sign out?";
+
+  @override
+  String get invalidEmail => "Invalid email";
+
+  @override
+  String get invalidPhoneNumber => "Invalid phone number";
+
+  @override
+  String get missingEmail => "Email is missing";
+
+  @override
+  String get invalidCredential =>
+      "The supplied auth credential is malformed or has expired.";
 }

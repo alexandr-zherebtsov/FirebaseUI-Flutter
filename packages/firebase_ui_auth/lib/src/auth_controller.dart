@@ -65,6 +65,8 @@ abstract class AuthController {
   /// Usuall called when user cancels the authentication flow.
   /// {@endtemplate}
   void reset();
+
+  void onCanceledAction();
 }
 
 class AuthControllerProvider extends InheritedWidget {

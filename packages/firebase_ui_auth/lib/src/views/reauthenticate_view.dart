@@ -3,8 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:firebase_auth/firebase_auth.dart' as fba;
-import 'package:flutter/widgets.dart';
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
+import 'package:flutter/widgets.dart';
 
 /// {@template ui.auth.views.reauthenticate_view}
 /// A view that could be used to build a custom [ReauthenticateDialog].
@@ -33,6 +33,10 @@ class ReauthenticateView extends StatelessWidget {
   /// {@macro ui.auth.widgets.email_from.showPasswordVisibilityToggle}
   final bool showPasswordVisibilityToggle;
 
+  final AuthSnackBarBuilder? snackBarBuilder;
+
+  final bool useSnackBarExceptions;
+
   /// {@macro ui.auth.views.reauthenticate_view}
   const ReauthenticateView({
     super.key,
@@ -42,6 +46,8 @@ class ReauthenticateView extends StatelessWidget {
     this.actionButtonLabelOverride,
     this.showPasswordVisibilityToggle = false,
     this.onPhoneVerfifed,
+    this.snackBarBuilder,
+    this.useSnackBarExceptions = false,
   });
 
   @override
@@ -97,6 +103,8 @@ class ReauthenticateView extends StatelessWidget {
         showAuthActionSwitch: false,
         actionButtonLabelOverride: actionButtonLabelOverride,
         showPasswordVisibilityToggle: showPasswordVisibilityToggle,
+        snackBarBuilder: snackBarBuilder,
+        useSnackBarExceptions: useSnackBarExceptions,
       ),
     );
   }

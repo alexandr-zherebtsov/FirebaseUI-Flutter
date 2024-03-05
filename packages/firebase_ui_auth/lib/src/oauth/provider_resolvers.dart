@@ -4,6 +4,7 @@
 
 // ignore_for_file: constant_identifier_names
 
+import 'package:firebase_ui_shared/firebase_ui_shared.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -23,7 +24,7 @@ const PASSWORD_PROVIDER_ID = 'password';
 /// Icon(icon);
 /// ```
 IconData providerIcon(BuildContext context, String providerId) {
-  final isCupertino = CupertinoUserInterfaceLevel.maybeOf(context) != null;
+  final isCupertino = PlatformActionUI.isApple();
 
   switch (providerId) {
     case GOOGLE_PROVIDER_ID:

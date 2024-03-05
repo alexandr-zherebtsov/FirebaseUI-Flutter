@@ -338,4 +338,23 @@ class UkLocalizations extends FirebaseUILocalizationLabels {
 
   @override
   String get confirmDeleteAccountButtonLabel => "Yes, delete";
+
+  @override
+  String get signOut => "Вийти?";
+
+  @override
+  String get signOutDescription => "Ви дійсно хочете вийти?";
+
+  @override
+  String get invalidEmail => "Невірна пошта";
+
+  @override
+  String get invalidPhoneNumber => "Невірний номер телефону";
+
+  @override
+  String get missingEmail => "Пошта відсутня.";
+
+  @override
+  String get invalidCredential =>
+      "Дані користувача неправильні або термін їх дії минув.";
 }

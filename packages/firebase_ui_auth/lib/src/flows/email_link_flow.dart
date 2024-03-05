@@ -2,8 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:flutter/widgets.dart';
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
+import 'package:flutter/widgets.dart';
 
 /// A state that indicates that the sign in link is being sent.
 /// UIs often reflect this state with a loading indicator.
@@ -57,6 +57,11 @@ class EmailLinkFlow extends AuthFlow<EmailLinkAuthProvider>
   void onLinkSent(String email) {
     value = const AwaitingDynamicLink();
     provider.awaitLink(email);
+  }
+
+  @override
+  void onCanceledAction() {
+    onCanceled();
   }
 }
 

@@ -3,10 +3,10 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:firebase_auth/firebase_auth.dart' as fba;
-import 'package:firebase_ui_shared/firebase_ui_shared.dart';
-import 'package:flutter/material.dart';
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:firebase_ui_localizations/firebase_ui_localizations.dart';
+import 'package:firebase_ui_shared/firebase_ui_shared.dart';
+import 'package:flutter/material.dart';
 
 import '../screens/internal/responsive_page.dart';
 
@@ -69,6 +69,8 @@ class SMSCodeInputScreen extends StatelessWidget {
   /// {@macro ui.auth.screens.responsive_page.breakpoint}
   final double breakpoint;
 
+  final SMSCodeBuilder? builder;
+
   const SMSCodeInputScreen({
     super.key,
     this.action,
@@ -82,11 +84,14 @@ class SMSCodeInputScreen extends StatelessWidget {
     this.breakpoint = 670,
     this.contentFlex,
     this.maxWidth,
+    this.builder,
   });
 
+  // ignore: unused_element
   void _reset() {
     final ctrl = AuthFlowBuilder.getController<PhoneAuthController>(flowKey);
-    ctrl?.reset();
+    // ctrl?.reset();
+    ctrl?.onCanceledAction();
   }
 
   @override
@@ -101,44 +106,57 @@ class SMSCodeInputScreen extends StatelessWidget {
       },
       child: FirebaseUIActions(
         actions: actions ?? const [],
-        child: UniversalScaffold(
-          body: Center(
-            child: ResponsivePage(
-              breakpoint: breakpoint,
-              maxWidth: maxWidth,
-              desktopLayoutDirection: desktopLayoutDirection,
-              sideBuilder: sideBuilder,
-              headerBuilder: headerBuilder,
-              headerMaxExtent: headerMaxExtent,
-              contentFlex: contentFlex,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SMSCodeInputView(
-                    auth: auth,
-                    action: action,
-                    flowKey: flowKey,
-                    onCodeVerified: () {
-                      if (actions != null) return;
-
-                      Navigator.of(context).popUntil((route) {
-                        return route.isFirst;
-                      });
-                    },
+        child: builder != null
+            ? SMSCodeInputView(
+                auth: auth,
+                action: action,
+                flowKey: flowKey,
+                builder: builder,
+                onCodeVerified: () {
+                  if (actions != null) return;
+                  Navigator.of(context).popUntil((route) {
+                    return route.isFirst;
+                  });
+                },
+              )
+            : UniversalScaffold(
+                body: Center(
+                  child: ResponsivePage(
+                    breakpoint: breakpoint,
+                    maxWidth: maxWidth,
+                    desktopLayoutDirection: desktopLayoutDirection,
+                    sideBuilder: sideBuilder,
+                    headerBuilder: headerBuilder,
+                    headerMaxExtent: headerMaxExtent,
+                    contentFlex: contentFlex,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SMSCodeInputView(
+                          auth: auth,
+                          action: action,
+                          flowKey: flowKey,
+                          builder: builder,
+                          onCodeVerified: () {
+                            if (actions != null) return;
+                            Navigator.of(context).popUntil((route) {
+                              return route.isFirst;
+                            });
+                          },
+                        ),
+                        UniversalButton(
+                          variant: ButtonVariant.text,
+                          text: l.goBackButtonLabel,
+                          onPressed: () {
+                            _reset();
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                      ],
+                    ),
                   ),
-                  UniversalButton(
-                    variant: ButtonVariant.text,
-                    text: l.goBackButtonLabel,
-                    onPressed: () {
-                      _reset();
-                      Navigator.of(context).pop();
-                    },
-                  )
-                ],
+                ),
               ),
-            ),
-          ),
-        ),
       ),
     );
   }

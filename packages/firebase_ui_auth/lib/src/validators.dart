@@ -2,8 +2,21 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:flutter/material.dart';
 import 'package:email_validator/email_validator.dart' as e;
+import 'package:flutter/material.dart';
+
+/// [String]? Extension
+extension StringNullableExtension on String? {
+  /// is null or isEmpty
+  bool isNullOrEmpty() => this?.trim().isEmpty ?? true;
+
+  /// clear phone number
+  String clearPhoneNumber({final bool usePlus = true}) {
+    if (isNullOrEmpty()) return '';
+    final String prefix = this!.contains('+') ? '' : '+';
+    return (usePlus ? prefix : '') + this!.replaceAll(' ', '');
+  }
+}
 
 /// An abstract class for building composite input validators.
 abstract class Validator {

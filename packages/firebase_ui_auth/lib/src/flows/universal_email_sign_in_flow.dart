@@ -47,4 +47,9 @@ class UniversalEmailSignInFlow extends AuthFlow<UniversalEmailSignInProvider>
   void findProvidersForEmail(String email) {
     provider.findProvidersForEmail(email);
   }
+
+  @override
+  void onCanceledAction() {
+    onCanceled();
+  }
 }

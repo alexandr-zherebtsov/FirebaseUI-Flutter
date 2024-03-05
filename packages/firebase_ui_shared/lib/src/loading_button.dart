@@ -18,7 +18,7 @@ class _LoadingButtonContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    bool isCupertino = CupertinoUserInterfaceLevel.maybeOf(context) != null;
+    bool isCupertino = PlatformActionUI.isApple();
     Widget child;
 
     if (color != null) {
@@ -98,7 +98,7 @@ class LoadingButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isMaterial3 = theme.useMaterial3;
-    final isCupertino = CupertinoUserInterfaceLevel.maybeOf(context) != null;
+    final isCupertino = PlatformActionUI.isApple();
 
     final resolvedColor = variant == ButtonVariant.filled && !isMaterial3
         ? theme.colorScheme.onPrimary

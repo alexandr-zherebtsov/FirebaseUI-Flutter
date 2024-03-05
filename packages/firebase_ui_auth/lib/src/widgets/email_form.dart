@@ -4,13 +4,12 @@
 
 import 'package:firebase_auth/firebase_auth.dart' as fba;
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
+import 'package:firebase_ui_auth/src/exeptions.dart';
+import 'package:firebase_ui_auth/src/validators.dart';
 import 'package:firebase_ui_localizations/firebase_ui_localizations.dart';
 import 'package:firebase_ui_shared/firebase_ui_shared.dart';
 import 'package:flutter/material.dart';
 
-import '../validators.dart';
-
-/// {@template ui.auth.widgets.email_form.forgot_password_action}
 /// An action that indicates that password recovery was triggered from the UI.
 ///
 /// Could be used to show a [ForgotPasswordScreen] or trigger a custom
@@ -136,6 +135,14 @@ class EmailForm extends StatelessWidget {
   /// {@endtemplate}
   final bool showPasswordVisibilityToggle;
 
+  final EmailPasswordBuilder? builder;
+
+  final VoidCallback? handleDifferentAuthAction;
+
+  final AuthSnackBarBuilder? snackBarBuilder;
+
+  final bool useSnackBarExceptions;
+
   /// {@macro ui.auth.widgets.email_form}
   const EmailForm({
     super.key,
@@ -147,6 +154,10 @@ class EmailForm extends StatelessWidget {
     this.actionButtonLabelOverride,
     this.style,
     this.showPasswordVisibilityToggle = false,
+    this.builder,
+    this.handleDifferentAuthAction,
+    this.snackBarBuilder,
+    this.useSnackBarExceptions = false,
   });
 
   @override
@@ -160,6 +171,10 @@ class EmailForm extends StatelessWidget {
       actionButtonLabelOverride: actionButtonLabelOverride,
       style: style,
       showPasswordVisibilityToggle: showPasswordVisibilityToggle,
+      handleDifferentAuthAction: handleDifferentAuthAction,
+      builder: builder,
+      snackBarBuilder: snackBarBuilder,
+      useSnackBarExceptions: useSnackBarExceptions,
     );
 
     return AuthFlowBuilder<EmailAuthController>(
@@ -167,6 +182,15 @@ class EmailForm extends StatelessWidget {
       action: action,
       provider: provider,
       child: child,
+      listener: (oldState, newState, controller) {
+        if (newState is AuthFailed && useSnackBarExceptions) {
+          ExceptionManager.showSnackBar(
+            context: context,
+            exception: newState.exception,
+            snackBarBuilder: snackBarBuilder,
+          );
+        }
+      },
     );
   }
 }
@@ -183,8 +207,12 @@ class _SignInFormContent extends StatefulWidget {
 
   final String? actionButtonLabelOverride;
   final bool showPasswordVisibilityToggle;
-
   final EmailFormStyle? style;
+
+  final VoidCallback? handleDifferentAuthAction;
+  final EmailPasswordBuilder? builder;
+  final AuthSnackBarBuilder? snackBarBuilder;
+  final bool useSnackBarExceptions;
 
   const _SignInFormContent({
     this.auth,
@@ -195,6 +223,10 @@ class _SignInFormContent extends StatefulWidget {
     this.actionButtonLabelOverride,
     this.style,
     this.showPasswordVisibilityToggle = false,
+    this.handleDifferentAuthAction,
+    this.builder,
+    this.snackBarBuilder,
+    this.useSnackBarExceptions = false,
   });
 
   @override
@@ -329,32 +361,45 @@ class _SignInFormContentState extends State<_SignInFormContent> {
           );
         },
       ),
-      Builder(
-        builder: (context) {
-          final authState = AuthState.of(context);
-          if (authState is AuthFailed) {
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: ErrorText(
-                textAlign: TextAlign.center,
-                exception: authState.exception,
-              ),
-            );
-          }
+      if (!widget.useSnackBarExceptions)
+        Builder(
+          builder: (context) {
+            final authState = AuthState.of(context);
+            if (authState is AuthFailed) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: ErrorText(
+                  textAlign: TextAlign.center,
+                  exception: authState.exception,
+                ),
+              );
+            }
 
-          return const SizedBox.shrink();
-        },
-      ),
+            return const SizedBox.shrink();
+          },
+        ),
     ];
-
+    final state = AuthState.of(context);
     return AutofillGroup(
       child: Form(
         key: formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.min,
-          children: children,
-        ),
+        child: widget.builder != null
+            ? widget.builder!(
+                context,
+                widget.action,
+                widget.handleDifferentAuthAction,
+                emailCtrl,
+                passwordCtrl,
+                confirmPasswordCtrl,
+                state is SigningIn || state is SigningUp,
+                state is AuthFailed ? state.exception : null,
+                _submit,
+              )
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisSize: MainAxisSize.min,
+                children: children,
+              ),
       ),
     );
   }

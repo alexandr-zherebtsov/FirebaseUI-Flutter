@@ -26,6 +26,8 @@ Future<void> startPhoneVerification({
 
   /// Additional actions to pass down to the [PhoneInputScreen].
   List<FirebaseUIAction> actions = const [],
+  AuthSnackBarBuilder? snackBarBuilder,
+  bool useSnackBarExceptions = false,
 }) async {
   await Navigator.of(context).push(
     createPageRoute(
@@ -38,6 +40,8 @@ Future<void> startPhoneVerification({
           action: action,
           multiFactorSession: multiFactorSession,
           mfaHint: hint,
+          snackBarBuilder: snackBarBuilder,
+          useSnackBarExceptions: useSnackBarExceptions,
         ),
       ),
     ),

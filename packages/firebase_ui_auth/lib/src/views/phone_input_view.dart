@@ -3,10 +3,12 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:firebase_auth/firebase_auth.dart' as fba;
+import 'package:firebase_ui_auth/firebase_ui_auth.dart';
+import 'package:firebase_ui_auth/src/exeptions.dart';
+import 'package:firebase_ui_auth/src/validators.dart';
+import 'package:firebase_ui_localizations/firebase_ui_localizations.dart';
 import 'package:firebase_ui_shared/firebase_ui_shared.dart';
 import 'package:flutter/widgets.dart' hide Title;
-import 'package:firebase_ui_auth/firebase_ui_auth.dart';
-import 'package:firebase_ui_localizations/firebase_ui_localizations.dart';
 
 import '../widgets/internal/title.dart';
 
@@ -51,6 +53,12 @@ class PhoneInputView extends StatefulWidget {
   /// {@macro ui.auth.providers.phone_auth_provider.mfa_hint}
   final fba.PhoneMultiFactorInfo? mfaHint;
 
+  final PhoneNumberBuilder? builder;
+
+  final AuthSnackBarBuilder? snackBarBuilder;
+
+  final bool useSnackBarExceptions;
+
   /// {@macro ui.auth.views.phone_input_view}
   const PhoneInputView({
     super.key,
@@ -63,6 +71,9 @@ class PhoneInputView extends StatefulWidget {
     this.footerBuilder,
     this.multiFactorSession,
     this.mfaHint,
+    this.builder,
+    this.snackBarBuilder,
+    this.useSnackBarExceptions = false,
   });
 
   @override
@@ -71,6 +82,7 @@ class PhoneInputView extends StatefulWidget {
 
 class _PhoneInputViewState extends State<PhoneInputView> {
   final phoneInputKey = GlobalKey<PhoneInputState>();
+  final TextEditingController phoneCtrl = TextEditingController();
 
   PhoneNumberSubmitCallback onSubmit(PhoneAuthController ctrl) =>
       (String phoneNumber) {
@@ -84,8 +96,16 @@ class _PhoneInputViewState extends State<PhoneInputView> {
         }
       };
 
+  String? _getPhoneNumber() {
+    if (widget.builder != null) {
+      return phoneCtrl.text.clearPhoneNumber();
+    } else {
+      return PhoneInput.getPhoneNumber(phoneInputKey);
+    }
+  }
+
   void _next(PhoneAuthController ctrl) {
-    final number = PhoneInput.getPhoneNumber(phoneInputKey);
+    final number = _getPhoneNumber();
     if (number != null) {
       onSubmit(ctrl)(number);
     }
@@ -96,7 +116,6 @@ class _PhoneInputViewState extends State<PhoneInputView> {
     final l = FirebaseUILocalizations.labelsOf(context);
     final countryCode = Localizations.localeOf(context).countryCode ??
         WidgetsBinding.instance.platformDispatcher.locale.countryCode;
-
     return AuthFlowBuilder<PhoneAuthController>(
       flowKey: widget.flowKey,
       action: widget.action,
@@ -106,16 +125,36 @@ class _PhoneInputViewState extends State<PhoneInputView> {
           final cb = widget.onSMSCodeRequested ??
               FirebaseUIAction.ofType<SMSCodeRequestedAction>(context)
                   ?.callback;
-
           cb?.call(
             context,
             widget.action,
             widget.flowKey,
-            PhoneInput.getPhoneNumber(phoneInputKey)!,
+            _getPhoneNumber()!,
+          );
+        }
+        if (newState is AuthFailed && widget.useSnackBarExceptions) {
+          ExceptionManager.showSnackBar(
+            context: context,
+            exception: newState.exception,
+            snackBarBuilder: widget.snackBarBuilder,
           );
         }
       },
       builder: (context, state, ctrl, child) {
+        if (widget.builder != null) {
+          return PhoneInput(
+            initialCountryCode: countryCode,
+            onSubmit: onSubmit(ctrl),
+            key: phoneInputKey,
+            state: state,
+            auth: widget.auth,
+            action: widget.action,
+            phoneCtrl: phoneCtrl,
+            exception: state is AuthFailed ? state.exception : null,
+            flowKey: widget.flowKey,
+            builder: widget.builder,
+          );
+        }
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
@@ -129,6 +168,9 @@ class _PhoneInputViewState extends State<PhoneInputView> {
                 initialCountryCode: countryCode,
                 onSubmit: onSubmit(ctrl),
                 key: phoneInputKey,
+                auth: widget.auth,
+                action: widget.action,
+                flowKey: widget.flowKey,
               ),
               const SizedBox(height: 16),
               UniversalButton(
@@ -136,7 +178,7 @@ class _PhoneInputViewState extends State<PhoneInputView> {
                 onPressed: () => _next(ctrl),
               ),
             ],
-            if (state is AuthFailed) ...[
+            if (state is AuthFailed && !widget.useSnackBarExceptions) ...[
               const SizedBox(height: 8),
               ErrorText(exception: state.exception),
               const SizedBox(height: 8),

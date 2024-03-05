@@ -352,6 +352,24 @@ abstract class FirebaseUILocalizationLabels {
   /// Used as an error text of the PasswordInput when provided password is empty
   /// or is not correct.
   String get wrongOrNoPasswordErrorText;
+
+  /// Sign out?
+  String get signOut;
+
+  /// Are you sure you want to sign out?
+  String get signOutDescription;
+
+  /// Error text
+  String get invalidEmail;
+
+  /// Error text
+  String get invalidPhoneNumber;
+
+  /// Error text
+  String get missingEmail;
+
+  /// Error text
+  String get invalidCredential;
 }
 
 class DefaultLocalizations extends EnLocalizations {

@@ -3,11 +3,12 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:firebase_auth/firebase_auth.dart' as fba;
+import 'package:firebase_ui_auth/firebase_ui_auth.dart';
+import 'package:firebase_ui_oauth/firebase_ui_oauth.dart';
+import 'package:firebase_ui_shared/firebase_ui_shared.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:firebase_ui_auth/firebase_ui_auth.dart';
-import 'package:firebase_ui_oauth/firebase_ui_oauth.dart';
 
 /// {@template ui.oauth.oauth_provider_button_base.error_builder}
 /// A builder that is invoked to build a widget that indicates an error.
@@ -254,7 +255,7 @@ class _OAuthProviderButtonBaseState extends State<OAuthProviderButtonBase>
 
   @override
   Widget build(BuildContext context) {
-    final isCupertino = CupertinoUserInterfaceLevel.maybeOf(context) != null;
+    final isCupertino = PlatformActionUI.isApple();
     final brightness =
         CupertinoTheme.of(context).brightness ?? Theme.of(context).brightness;
 
@@ -436,7 +437,7 @@ class _ButtonContent extends StatelessWidget {
               ),
             );
 
-      final isCupertino = CupertinoUserInterfaceLevel.maybeOf(context) != null;
+      final isCupertino = PlatformActionUI.isApple();
       final topMargin = isCupertino ? (height - fontSize) / 2 : 0.0;
 
       child = Stack(

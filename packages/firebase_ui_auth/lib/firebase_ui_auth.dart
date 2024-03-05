@@ -7,11 +7,11 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_ui_oauth/firebase_ui_oauth.dart';
 import 'package:flutter/widgets.dart';
 
-export 'package:firebase_ui_shared/firebase_ui_shared.dart' show ButtonVariant;
-
 import 'src/actions.dart';
 import 'src/oauth_providers.dart';
 import 'src/providers/auth_provider.dart';
+
+export 'package:firebase_ui_shared/firebase_ui_shared.dart' show ButtonVariant;
 
 export 'src/actions.dart';
 export 'src/auth_controller.dart' show AuthAction, AuthController;
@@ -32,6 +32,12 @@ export 'src/auth_state.dart'
         // ignore: deprecated_member_use_from_same_package
         DifferentSignInMethodsFound,
         MFARequired;
+export 'src/builders/auth_screen_builder.dart';
+export 'src/builders/phone_screen_builder.dart';
+export 'src/builders/profile_email_verification_builder.dart';
+export 'src/builders/profile_screen_builder.dart';
+export 'src/builders/sms_code_screen_builder.dart';
+export 'src/builders_typedefs.dart';
 export 'src/email_verification.dart';
 export 'src/flows/email_flow.dart';
 export 'src/flows/email_link_flow.dart';
@@ -151,7 +157,6 @@ class FirebaseUIAuth {
     final resolvedAuth = auth ?? fba.FirebaseAuth.instance;
     await OAuthProviders.signOut(resolvedAuth);
     await resolvedAuth.signOut();
-
     if (context != null) {
       final action = FirebaseUIAction.ofType<SignedOutAction>(context);
       action?.callback(context);

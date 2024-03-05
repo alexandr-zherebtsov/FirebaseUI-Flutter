@@ -7,6 +7,7 @@ import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:firebase_ui_localizations/firebase_ui_localizations.dart';
 import 'package:firebase_ui_oauth/firebase_ui_oauth.dart'
     hide OAuthProviderButtonBase;
+import 'package:firebase_ui_shared/firebase_ui_shared.dart';
 import 'package:flutter/cupertino.dart' hide Title;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart' hide Title;
@@ -58,6 +59,14 @@ class LoginView extends StatefulWidget {
   /// {@macro ui.auth.widgets.email_from.showPasswordVisibilityToggle}
   final bool showPasswordVisibilityToggle;
 
+  final EmailAuthProvider? emailPasswordProvider;
+
+  final EmailPasswordBuilder? builder;
+
+  final AuthSnackBarBuilder? snackBarBuilder;
+
+  final bool useSnackBarExceptions;
+
   /// {@macro ui.auth.views.login_view}
   const LoginView({
     super.key,
@@ -72,6 +81,10 @@ class LoginView extends StatefulWidget {
     this.subtitleBuilder,
     this.actionButtonLabelOverride,
     this.showPasswordVisibilityToggle = false,
+    this.emailPasswordProvider,
+    this.builder,
+    this.snackBarBuilder,
+    this.useSnackBarExceptions = false,
   });
 
   @override
@@ -80,7 +93,9 @@ class LoginView extends StatefulWidget {
 
 class _LoginViewState extends State<LoginView> {
   late AuthAction _action = widget.action;
+
   bool get _showTitle => widget.showTitle ?? true;
+
   bool get _showAuthActionSwitch => widget.showAuthActionSwitch ?? true;
   bool _buttonsBuilt = false;
 
@@ -103,6 +118,7 @@ class _LoginViewState extends State<LoginView> {
         auth: widget.auth,
         action: _action,
         variant: widget.oauthButtonVariant,
+        snackBarBuilder: widget.snackBarBuilder,
       );
     }).toList();
 
@@ -149,7 +165,7 @@ class _LoginViewState extends State<LoginView> {
       actionText = l.signInText;
     }
 
-    final isCupertino = CupertinoUserInterfaceLevel.maybeOf(context) != null;
+    final isCupertino = PlatformActionUI.isApple();
     TextStyle? hintStyle;
     late Color registerTextColor;
 
@@ -210,6 +226,22 @@ class _LoginViewState extends State<LoginView> {
     final platform = Theme.of(context).platform;
     _buttonsBuilt = false;
 
+    if (widget.builder != null && widget.emailPasswordProvider != null) {
+      return EmailForm(
+        key: ValueKey(_action),
+        auth: widget.auth,
+        action: _action,
+        provider: widget.emailPasswordProvider,
+        email: widget.email,
+        actionButtonLabelOverride: widget.actionButtonLabelOverride,
+        showPasswordVisibilityToggle: widget.showPasswordVisibilityToggle,
+        builder: widget.builder,
+        handleDifferentAuthAction: () => _handleDifferentAuthAction(context),
+        snackBarBuilder: widget.snackBarBuilder,
+        useSnackBarExceptions: widget.useSnackBarExceptions,
+      );
+    }
+
     return IntrinsicHeight(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -228,6 +260,9 @@ class _LoginViewState extends State<LoginView> {
                   actionButtonLabelOverride: widget.actionButtonLabelOverride,
                   showPasswordVisibilityToggle:
                       widget.showPasswordVisibilityToggle,
+                  builder: widget.builder,
+                  snackBarBuilder: widget.snackBarBuilder,
+                  useSnackBarExceptions: widget.useSnackBarExceptions,
                 )
               ] else if (provider is PhoneAuthProvider) ...[
                 const SizedBox(height: 8),

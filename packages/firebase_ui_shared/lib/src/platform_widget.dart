@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:firebase_ui_shared/firebase_ui_shared.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -22,10 +23,9 @@ abstract class PlatformWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isCupertino = CupertinoUserInterfaceLevel.maybeOf(context) != null;
     late Widget child;
 
-    if (isCupertino) {
+    if (PlatformActionUI.isApple()) {
       child = buildCupertino(context);
     } else {
       child = buildMaterial(context);

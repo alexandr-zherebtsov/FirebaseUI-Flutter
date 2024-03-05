@@ -23,9 +23,12 @@ class UniversalScaffold extends PlatformWidget {
 
   @override
   Widget buildCupertino(BuildContext context) {
-    return CupertinoPageScaffold(
-      resizeToAvoidBottomInset: resizeToAvoidBottomInset ?? true,
-      child: body,
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: CupertinoPageScaffold(
+        resizeToAvoidBottomInset: resizeToAvoidBottomInset ?? true,
+        child: body,
+      ),
     );
   }
 

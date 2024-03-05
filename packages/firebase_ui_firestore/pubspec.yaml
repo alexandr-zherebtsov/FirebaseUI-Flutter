@@ -1,5 +1,6 @@
 name: firebase_ui_firestore
 description: Pre-built widgets and utilites that make it easy to integrate Firebase Firestore into your Flutter app.
+publish_to: 'none'
 version: 1.6.2
 homepage: https://github.com/firebase/FirebaseUI-Flutter/tree/master/packages/firebase_ui_firestore
 
@@ -9,8 +10,25 @@ environment:
 
 dependencies:
   cloud_firestore: ^4.15.5
-  firebase_ui_localizations: ^1.10.2
-  firebase_ui_shared: ^1.4.1
+#  firebase_ui_localizations: ^1.10.2
+#  firebase_ui_shared: ^1.4.1
+
+#  firebase_ui_localizations:
+#    path: ../firebase_ui_localizations
+#  firebase_ui_shared:
+#    path: ../firebase_ui_shared
+
+  firebase_ui_localizations:
+    git:
+      url: https://github.com/alexandr-zherebtsov/FirebaseUI-Flutter.git
+      path: packages/firebase_ui_localizations/
+      ref: feature/UI-builders
+  firebase_ui_shared:
+    git:
+      url: https://github.com/alexandr-zherebtsov/FirebaseUI-Flutter.git
+      path: packages/firebase_ui_shared/
+      ref: feature/UI-builders
+
   flutter:
     sdk: flutter
 

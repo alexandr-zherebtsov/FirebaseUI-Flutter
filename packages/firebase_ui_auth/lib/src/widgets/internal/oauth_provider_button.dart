@@ -3,11 +3,12 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:firebase_auth/firebase_auth.dart' as fba;
-import 'package:firebase_ui_shared/firebase_ui_shared.dart';
-import 'package:flutter/material.dart';
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
+import 'package:firebase_ui_auth/src/exeptions.dart';
 import 'package:firebase_ui_localizations/firebase_ui_localizations.dart';
 import 'package:firebase_ui_oauth/firebase_ui_oauth.dart' as ffui_oauth;
+import 'package:firebase_ui_shared/firebase_ui_shared.dart';
+import 'package:flutter/material.dart';
 
 typedef ErrorCallback = void Function(Exception e);
 
@@ -56,6 +57,12 @@ class OAuthProviderButton extends StatelessWidget {
   /// {@macro ui.auth.widgets.oauth_provider_button.oauth_button_variant}
   final OAuthButtonVariant? variant;
 
+  final OAuthButtonBuilder? builder;
+
+  final AuthSnackBarBuilder? snackBarBuilder;
+
+  final bool useSnackBarExceptions;
+
   /// Returns a text that should be displayed on the button.
   static String resolveProviderButtonLabel(
     String providerId,
@@ -90,6 +97,9 @@ class OAuthProviderButton extends StatelessWidget {
 
     /// {@macro ui.auth.auth_controller.auth}
     this.auth,
+    this.builder,
+    this.snackBarBuilder,
+    this.useSnackBarExceptions = false,
   });
 
   @override
@@ -101,7 +111,27 @@ class OAuthProviderButton extends StatelessWidget {
       provider: provider,
       action: action,
       auth: auth,
+      listener: (state, newState, child) {
+        if (newState is AuthFailed && useSnackBarExceptions) {
+          ExceptionManager.showSnackBar(
+            context: context,
+            exception: newState.exception,
+            snackBarBuilder: snackBarBuilder,
+          );
+        }
+      },
       builder: (context, state, ctrl, child) {
+        if (builder != null) {
+          return builder!(
+            context,
+            state is SigningIn || state is CredentialReceived,
+            state is AuthFailed ? state.exception : null,
+            () => ctrl.signIn(
+              Theme.of(context).platform,
+            ),
+          );
+        }
+
         final button = ffui_oauth.OAuthProviderButtonBase(
           provider: provider,
           action: action,
@@ -127,7 +157,7 @@ class OAuthProviderButton extends StatelessWidget {
         return Column(
           children: [
             button,
-            const _ErrorListener(),
+            if (!useSnackBarExceptions) const _ErrorListener(),
           ],
         );
       },

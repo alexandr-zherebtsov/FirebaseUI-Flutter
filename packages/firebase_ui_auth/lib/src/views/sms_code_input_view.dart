@@ -2,12 +2,11 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:firebase_auth/firebase_auth.dart' as fba;
+import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:firebase_ui_localizations/firebase_ui_localizations.dart';
 import 'package:firebase_ui_shared/firebase_ui_shared.dart';
 import 'package:flutter/material.dart';
-
-import 'package:firebase_auth/firebase_auth.dart' as fba;
-import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 
 typedef SMSCodeSubmitCallback = void Function(String smsCode);
 
@@ -31,6 +30,8 @@ class SMSCodeInputView extends StatefulWidget {
   /// A callback that is being called when the user submits a SMS code.
   final SMSCodeSubmitCallback? onSubmit;
 
+  final SMSCodeBuilder? builder;
+
   /// {@macro ui.auth.views.sms_code_input_view}
   const SMSCodeInputView({
     super.key,
@@ -39,6 +40,7 @@ class SMSCodeInputView extends StatefulWidget {
     this.auth,
     this.action,
     this.onSubmit,
+    this.builder,
   });
 
   @override
@@ -71,6 +73,15 @@ class _SMSCodeInputViewState extends State<SMSCodeInputView> {
         confirmationResult: _codeSentState!.confirmationResult,
         verificationId: _codeSentState!.verificationId,
       );
+    } else {
+      final state = AuthFlowBuilder.getState(widget.flowKey);
+      if (state is SMSCodeSent) {
+        ctrl.verifySMSCode(
+          code,
+          confirmationResult: state.confirmationResult,
+          verificationId: state.verificationId,
+        );
+      }
     }
   }
 
@@ -86,38 +97,48 @@ class _SMSCodeInputViewState extends State<SMSCodeInputView> {
         if (newState is SignedIn || newState is CredentialLinked) {
           widget.onCodeVerified?.call();
         }
-
         if (newState is SMSCodeSent) {
           _codeSentState = newState;
         }
       },
       builder: (context, state, ctrl, child) {
-        return IntrinsicWidth(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              SMSCodeInput(
-                key: key,
-                onSubmit: (smsCode) {
-                  submit(smsCode, ctrl);
+        return widget.builder != null
+            ? widget.builder!(
+                context,
+                state is CredentialReceived ||
+                    state is SigningIn ||
+                    state is SMSCodeRequested,
+                state is AuthFailed ? state.exception : null,
+                (String? code) {
+                  submit(code ?? '', ctrl);
                 },
-              ),
-              const SizedBox(height: 16),
-              Padding(
-                padding: const EdgeInsets.all(8),
-                child: UniversalButton(
-                  onPressed: () {
-                    final code = key.currentState!.code;
-                    if (code.length < 6) return;
-                    submit(code, ctrl);
-                  },
-                  text: l.verifyCodeButtonText,
+              )
+            : IntrinsicWidth(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    SMSCodeInput(
+                      key: key,
+                      onSubmit: (smsCode) {
+                        submit(smsCode, ctrl);
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: UniversalButton(
+                        onPressed: () {
+                          final code = key.currentState!.code;
+                          if (code.length < 6) return;
+                          submit(code, ctrl);
+                        },
+                        text: l.verifyCodeButtonText,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
-          ),
-        );
+              );
       },
     );
   }

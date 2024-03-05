@@ -44,6 +44,7 @@ class EmailVerificationController extends ValueNotifier<EmailVerificationState>
 
   EmailVerificationController(this.auth)
       : super(EmailVerificationState.unresolved) {
+    value = EmailVerificationState.unresolved;
     final user = auth.currentUser;
 
     if (user != null) {
@@ -65,7 +66,7 @@ class EmailVerificationController extends ValueNotifier<EmailVerificationState>
   }
 
   /// An instance of user that is currently signed in.
-  fba.User get user => auth.currentUser!;
+  fba.User? get user => auth.currentUser;
 
   /// Current [EmailVerificationState].
   EmailVerificationState get state => value;
@@ -79,14 +80,15 @@ class EmailVerificationController extends ValueNotifier<EmailVerificationState>
 
   /// Reloads firebase user and updates the [state].
   Future<void> reload() async {
-    await user.reload();
-
-    if (user.email == null) {
-      value = EmailVerificationState.unresolved;
-    } else if (user.emailVerified) {
-      value = EmailVerificationState.verified;
-    } else {
-      value = EmailVerificationState.unverified;
+    if (user != null) {
+      await user!.reload();
+      if (user!.email == null) {
+        value = EmailVerificationState.unresolved;
+      } else if (user!.emailVerified) {
+        value = EmailVerificationState.verified;
+      } else {
+        value = EmailVerificationState.unverified;
+      }
     }
   }
 
@@ -102,7 +104,7 @@ class EmailVerificationController extends ValueNotifier<EmailVerificationState>
   ) async {
     value = EmailVerificationState.sending;
     try {
-      await user.sendEmailVerification(actionCodeSettings);
+      await user?.sendEmailVerification(actionCodeSettings);
     } on Exception catch (e) {
       error = e;
       value = EmailVerificationState.failed;
@@ -117,7 +119,7 @@ class EmailVerificationController extends ValueNotifier<EmailVerificationState>
         final code = linkData.link.queryParameters['oobCode']!;
         await auth.checkActionCode(code);
         await auth.applyActionCode(code);
-        await user.reload();
+        await user?.reload();
         value = EmailVerificationState.verified;
       } on Exception catch (err) {
         error = err;
